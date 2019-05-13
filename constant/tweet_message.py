@@ -6,8 +6,6 @@ from main_config import BotConfig
 from khayyam3 import *
 
 
-#
-#
 # def make_tweet_message(user_name, text, profile_image_url, favorite_count, retweet_count):
 #     message = TextMessage(
 #         ReadyText.tweet_message.format(text, user_name, favorite_count, retweet_count,
@@ -54,13 +52,17 @@ from khayyam3 import *
 def get_status_message(status):
     user = status['user']
     screen_name = user['screen_name']
+    name = user['name']
     tweet_link = BotConfig.tweet_link.format(screen_name=screen_name, ID=status['id_str'])
     full_text = status['full_text']
     re_tweeted_status = status.get('retweeted_status')
     if re_tweeted_status:
         favorite_count = re_tweeted_status['favorite_count']
+        re_tweet_user = re_tweeted_status['user']
+        retweet_name = ReadyText.retweet_from.format(re_tweet_user['name'])
     else:
         favorite_count = status['favorite_count']
+        retweet_name = ""
     favorite_count = persian.convert_en_numbers(favorite_count)
     re_tweet_count = status['retweet_count']
     re_tweet_count = persian.convert_en_numbers(re_tweet_count)
@@ -68,7 +70,7 @@ def get_status_message(status):
     datetime_utc = datetime.datetime.strptime(created_at, "%a %b %d %H:%M:%S %z %Y")
     created_at = JalaliDatetime().from_datetime(datetime_utc).strftime('%C')
     created_at = persian.convert_en_numbers(created_at)
-    return ReadyText.status_text.format(full_text=full_text,
+    return ReadyText.status_text.format(name=name, retweet_name=retweet_name, full_text=full_text,
                                         tweet_link=tweet_link,
                                         favorite_count=favorite_count,
                                         re_tweet_count=re_tweet_count,

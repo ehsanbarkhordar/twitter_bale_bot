@@ -44,7 +44,7 @@ def send_tweet_api(user, tweet_text):
 @twitter_persist
 def home_time_line(user):
     twitter = Twython(consumer_key, consumer_secret, user.oauth_token, user.oauth_token_secret)
-    result = twitter.get_home_timeline(count=BotConfig.tweet_count, tweet_mode='extended')
+    result = twitter.get_home_timeline(count=BotConfig.tweet_count, tweet_mode='extended', exclude_replies=True)
     return result
 
 
