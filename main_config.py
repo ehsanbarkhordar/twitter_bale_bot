@@ -7,7 +7,7 @@ try:
     consumer_key = LocalConfig.consumer_key
     consumer_secret = LocalConfig.consumer_secret
 except ImportError:
-    bot_toke = ""
+    bot_token = ""
     consumer_key = ""
     consumer_secret = ""
 
