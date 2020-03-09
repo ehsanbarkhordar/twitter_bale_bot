@@ -25,3 +25,4 @@ env.*
 .venv
 venv/
 ENV/
+config.ini

@@ -25,8 +25,8 @@ services:
     #   Config
       - BASE_URL=wss://api.bale.ai/v1/bots/
       - TOKEN=649bf46416fa39f1e4893b4fa53faf59c309b54e
-      - APP_KEY=aE2w23LSsRGMT5H10iGg8ADa9
-      - APP_SECRET=Lop3x02PqF5eUVEWxxFNMHCkvHaoSnFLXrfydU4ul8BebhMkic
+      - CONSUMER_KEY=aE2w23LSsRGMT5H10iGg8ADa9
+      - CONSUMER_SECRET=Lop3x02PqF5eUVEWxxFNMHCkvHaoSnFLXrfydU4ul8BebhMkic
       - TWEET_COUNT=3
       - TIME_SLEEP=0.5
     depends_on:

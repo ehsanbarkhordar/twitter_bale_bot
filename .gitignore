@@ -11,6 +11,9 @@ gen### Python template
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
+
+config.ini
 
 # C extensions
 *.so
