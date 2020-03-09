@@ -2,7 +2,7 @@ import datetime
 
 import persian as persian
 from constant.message import ReadyText
-from main_config import BotConfig
+from main_config import Config
 from khayyam3 import *
 
 

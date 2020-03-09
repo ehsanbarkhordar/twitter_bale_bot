@@ -1,18 +1,17 @@
-from balebot.utils.logger import Logger
+import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from main_config import DatabaseConfig
+from main_config import Config, logger
 
-db_string = DatabaseConfig.db_string
+db_string = Config.db_string
 engine = create_engine(db_string)
 Base = declarative_base()
 session = sessionmaker(engine)
 session = session()
-
-logger = Logger.get_logger()
 
 
 def create_tables():
@@ -25,10 +24,10 @@ def db_persist(func):
         try:
             res = func(*args, **kwargs)
             session.commit()
-            logger.info("success calling db func: " + func.__name__)
+            logger.debug("database model function called: " + func.__name__)
             return res
         except SQLAlchemyError as e:
-            logger.error(e.args)
+            logger.exception(e.args)
             session.rollback()
             return False
 
