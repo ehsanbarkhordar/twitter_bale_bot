@@ -96,20 +96,29 @@ def get_time_line(bot, update, user_data):
     previous_since_id = user_data.get("previous_since_id", None)
     auth.set_access_token(user.access_token, user.access_token_secret)
     api = tweepy.API(auth)
-    if previous_since_id:
-        timeline = api.home_timeline(count=Config.tweet_count,
-                                     since_id=previous_since_id,
-                                     tweet_mode="extended",
-                                     include_retweets=True,
-                                     exclude_replies=True)
-    else:
-        timeline = api.home_timeline(count=Config.tweet_count,
-                                     tweet_mode="extended",
-                                     include_retweets=True,
-                                     exclude_replies=True)
+    try:
+        if previous_since_id:
+            timeline = api.home_timeline(count=Config.tweet_count,
+                                         since_id=previous_since_id,
+                                         tweet_mode="extended",
+                                         include_retweets=True,
+                                         exclude_replies=True)
+        else:
+            timeline = api.home_timeline(count=Config.tweet_count,
+                                         tweet_mode="extended",
+                                         include_retweets=True,
+                                         exclude_replies=True)
+    except tweepy.error.RateLimitError:
+        update.message.reply_text(ReadyText.rate_limit_exceeded, reply_markup=ReplyKeyboardMarkup(
+            keyboard=[[ButtonText.show_more, ButtonText.back]]))
+        return MORE
     tweets = [status.full_text for status in timeline]
+    if timeline.since_id == previous_since_id:
+        update.message.reply_text(ReadyText.no_new_timeline, reply_markup=ReplyKeyboardMarkup(
+            keyboard=[[ButtonText.show_more, ButtonText.back]]))
+        return MORE
+
     user_data['previous_since_id'] = timeline.since_id
-    # message = parse_timeline_messages(timeline)
     for t in tweets:
         update.message.reply_text(t, reply_markup=ReplyKeyboardMarkup(
             keyboard=[[ButtonText.show_more, ButtonText.back]]))

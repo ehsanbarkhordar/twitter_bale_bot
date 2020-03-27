@@ -33,7 +33,9 @@ class ReadyText:
     register_before = "شما قبلا ثبت نام کرده اید."
     anonymous = "کاربر ناشناس"
     no_search_result = "هیچ توییتی پیدا نشد!"
+    no_new_timeline = "هیچ توییت جدیدی در تایم لاین پیدا نشد!"
     show_more = "برای دیدن ادامه تایم لاین خود دکمه زیر را بزنید:"
+    rate_limit_exceeded= "شما بیشتر از محدودیت خود درخواست داشته اید! لطفا ۱ دقیقه بعد دوباره تلاش کنید."
 
 
 class ButtonText:
