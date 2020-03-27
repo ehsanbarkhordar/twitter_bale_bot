@@ -33,6 +33,7 @@ class ReadyText:
     register_before = "شما قبلا ثبت نام کرده اید."
     anonymous = "کاربر ناشناس"
     no_search_result = "هیچ توییتی پیدا نشد!"
+    show_more = "برای دیدن ادامه تایم لاین خود دکمه زیر را بزنید:"
 
 
 class ButtonText:

@@ -5,12 +5,15 @@ from telegram import (ReplyKeyboardMarkup, Bot, Update)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler)
 from telegram.ext import *
+from telegram.utils.request import Request
+
 from constant.message import ReadyText, ButtonText
 from db.models.user import User
 from main_config import Config, logger
+from twitter.tweet_parser import parse_timeline_messages
 from twitter.twitter_api import auth
 
-ACTION, REGISTER, TEXT, LOCATION, VERIFY_NUMBER = range(5)
+ACTION, REGISTER, TEXT, LOCATION, VERIFY_NUMBER, MORE = range(6)
 
 back_keyboard = [[ButtonText.back]]
 main_keyboard = [[ButtonText.send_tweet, ButtonText.get_home_time_line, ButtonText.search]]
@@ -21,6 +24,7 @@ def check_user_is_register():
 
 
 def start(bot, update: Update, user_data):
+    logger.info("start")
     bale_id = str(update.effective_user.id)
     user = User.get_user_by_user_id(bale_id)
     if user:
@@ -75,7 +79,7 @@ def get_tweet_msg(bot, update, user_data):
 
 
 def send_tweet(bot, update, user_data):
-    logger.info("in gender")
+    logger.info("send_tweet")
     # user = update.message.from_user
     # logger.info("Gender of %s: %s", user.first_name, update.message.text)
     user = user_data['user']
@@ -86,15 +90,19 @@ def send_tweet(bot, update, user_data):
     return ConversationHandler.END
 
 
-def get_time_line(bot, update):
-    user = update.message.from_user
-    photo_file = update.message.photo[-1].get_file()
-    logger.info(photo_file)
-    photo_file.download('user_photo.jpg')
-    logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
-    update.message.reply_text('Gorgeous! Now, send me your location please, '
-                              'or send /skip if you don\'t want to.')
-    return LOCATION
+def get_time_line(bot, update, user_data):
+    logger.info("get_time_line")
+    user = user_data['user']
+    auth.set_access_token(user.access_token, user.access_token_secret)
+    api = tweepy.API(auth)
+    timeline = api.home_timeline(count=Config.tweet_count, tweet_mode="extended", include_retweets=True)
+    tweets = [status.full_text for status in timeline]
+    # message = parse_timeline_messages(timeline)
+    # print(timeline)
+    for t in tweets:
+        # update.message.reply_text(t)
+        update.message.reply_text(t, reply_markup=ReplyKeyboardMarkup(keyboard=[[ButtonText.show_more]]))
+    return MORE
 
 
 def search(bot, update, user_data):
@@ -149,9 +157,10 @@ def error(bot, update):
 
 def main():
     # Create the Updater and pass it your bot's token.
+    request = Request(con_pool_size=8)
     bot = Bot(token=Config.bot_token,
               base_url=Config.base_url,
-              base_file_url=Config.base_file_url)
+              base_file_url=Config.base_file_url, request=request)
     updater = Updater(bot=bot)
 
     # Get the dispatcher to register handlers
@@ -167,11 +176,16 @@ def main():
             ACTION: [
                 back_regex,
                 RegexHandler(pattern='^' + ButtonText.send_tweet + '$', callback=get_tweet_msg, pass_user_data=True),
-                RegexHandler(pattern='^' + ButtonText.get_home_time_line + '$', callback=get_tweet_msg,
+                RegexHandler(pattern='^' + ButtonText.get_home_time_line + '$', callback=get_time_line,
                              pass_user_data=True),
-                RegexHandler(pattern='^' + ButtonText.search + '$', callback=search, pass_user_data=True)],
+                RegexHandler(pattern='^' + ButtonText.search + '$', callback=search, pass_user_data=True),
+                CommandHandler('start', start, pass_user_data=True),
+            ],
+            MORE: [RegexHandler(pattern='^' + ButtonText.show_more + '$', callback=get_time_line, pass_user_data=True),
+                   ],
             REGISTER: [back_regex,
-                       RegexHandler(pattern='^' + ButtonText.register + '$', callback=get_verify_url)],
+                       RegexHandler(pattern='^' + ButtonText.register + '$', callback=get_verify_url)
+                       ],
             VERIFY_NUMBER: [back_regex,
                             MessageHandler(Filters.text, register)],
             TEXT: [back_regex,
@@ -198,7 +212,7 @@ def main():
     dp.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling(poll_interval=2)
+    updater.start_polling()
     # you can replace above line with commented below lines to use webhook instead of polling
     # updater.bot.set_webhook(url="{}{}".format(os.getenv('WEB_HOOK_DOMAIN', "https://testwebhook.bale.ai"),
     #                                           os.getenv('WEB_HOOK_PATH', "/get-upd")))

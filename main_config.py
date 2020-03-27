@@ -9,7 +9,7 @@ filename = os.path.join(dirname, './config.ini')
 config.read(filename)
 
 # Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -24,8 +24,8 @@ class Config:
     active_next_limit = int(os.environ.get('ACTIVE_NEXT_LIMIT', 40))
     send_delay = float(os.environ.get('SEND_DELAY', 0.5))
     bot_token = os.environ.get('TOKEN', config['bot']['token'])
-    base_url = os.environ.get('TOKEN', config['bot']['base_url'])
-    base_file_url = os.environ.get('TOKEN', config['bot']['base_file_url'])
+    base_url = os.environ.get('BASE_URL', config['bot']['base_url'])
+    base_file_url = os.environ.get('BASE_FILE_URL', config['bot']['base_file_url'])
     bot_user_id = os.environ.get('USER_ID', "41")
     # twitter
     tweet_link = os.environ.get('TWITTER_STATUS_LINK', 'https://twitter.com/{screen_name}/status/{ID}')
