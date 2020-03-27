@@ -10,8 +10,8 @@ from telegram.utils.request import Request
 from constant.message import ReadyText, ButtonText
 from db.models.user import User
 from main_config import Config, logger
-from twitter.tweet_parser import parse_timeline_messages
-from twitter.twitter_api import auth
+from twitter_api.tweet_parser import parse_timeline_messages
+from twitter_api.twitter_api import auth
 
 ACTION, REGISTER, TEXT, LOCATION, VERIFY_NUMBER, MORE = range(6)
 
@@ -93,15 +93,26 @@ def send_tweet(bot, update, user_data):
 def get_time_line(bot, update, user_data):
     logger.info("get_time_line")
     user = user_data['user']
+    previous_since_id = user_data.get("previous_since_id", None)
     auth.set_access_token(user.access_token, user.access_token_secret)
     api = tweepy.API(auth)
-    timeline = api.home_timeline(count=Config.tweet_count, tweet_mode="extended", include_retweets=True)
+    if previous_since_id:
+        timeline = api.home_timeline(count=Config.tweet_count,
+                                     since_id=previous_since_id,
+                                     tweet_mode="extended",
+                                     include_retweets=True,
+                                     exclude_replies=True)
+    else:
+        timeline = api.home_timeline(count=Config.tweet_count,
+                                     tweet_mode="extended",
+                                     include_retweets=True,
+                                     exclude_replies=True)
     tweets = [status.full_text for status in timeline]
+    user_data['previous_since_id'] = timeline.since_id
     # message = parse_timeline_messages(timeline)
-    # print(timeline)
     for t in tweets:
-        # update.message.reply_text(t)
-        update.message.reply_text(t, reply_markup=ReplyKeyboardMarkup(keyboard=[[ButtonText.show_more]]))
+        update.message.reply_text(t, reply_markup=ReplyKeyboardMarkup(
+            keyboard=[[ButtonText.show_more, ButtonText.back]]))
     return MORE
 
 
